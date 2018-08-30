@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>汽车管理系统</title>
+    <link href="/public/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        * {
+            padding: 0;
+            margin: 0;
+        }
+
+        body {
+            background: url(/public/img/bg.jpg);
+            background-size: cover;
+        }
+
+        .title {
+            width: 100%;
+            height: 30px;
+            background: #337ab7;
+        }
+
+        .title h5 {
+            color: #fff;
+            padding-left: 20px;
+            padding-top: 5px;
+        }
+
+        a {
+            text-decoration: none;
+        }
+
+        .box {
+            width: 100%;
+            height: 500px;
+            position: relative;
+            top: 11px;
+        }
+
+        .left {
+            float: left;
+            width: 200px;
+            height: 500px;
+        }
+
+        .right, .right1 {
+            position: absolute;
+            top: 0;
+            left: 250px;
+            width: 600px;
+            height: 300px;
+        }
+
+        #tbody tr th {
+            text-align: center;
+        }
+
+        .count {
+            width: 600px;
+            height: 300px;
+            border-top: 2px solid #ccc;
+            padding-top: 20px;
+        }
+
+        .count .inp {
+            width: 100px;
+        }
+
+        .hide {
+            display: none;
+        }
+
+        .show {
+            display: block;
+            width: 89.5%;
+            margin-left: -50px;
+        }
+    </style>
+</head>
+<body>
+<div class="title">
+    <h5>汽车租赁管理系统</h5>
+</div>
+<nav class="navbar navbar-default navbar-fixed-top" role="navigation">
+    <div class="container">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar"
+                    aria-expanded="false" aria-controls="navbar">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="#">汽车租赁系统</a>
+        </div>
+        <div id="navbar" class="navbar-collapse collapse">
+            <ul class="nav navbar-nav">
+                <li><a href="/admin">客人查询</a></li>
+                <li><a href="/lease">租凭登记</a></li>
+                <li><a href="/return">归还登记</a></li>
+                <li class="active"><a href="/statistics">统计分析</a></li>
+                <li><a href="/category">类别档案</a></li>
+                <li><a href="/car">汽车档案</a></li>
+                <li><a href="#">退出系统</a></li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<div class="box">
+    <div class="left">
+        <table class="table  table-striped navbar-default">
+            <tbody id="tbody">
+            <tr>
+                <th class="zu">租出统计</th>
+            </tr>
+            <tr>
+                <th class="huan">归还统计</th>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+    <div class="right hide">
+        <table class="table  table-striped navbar-default">
+            <thead>
+            <tr>
+                <td></td>
+                <td>行号</td>
+                <td width="14%">租赁名称</td>
+                <td>租赁人</td>
+                <td>租赁时长</td>
+                <td>每天租金</td>
+                <td>合计金额</td>
+                <td>租赁日期</td>
+                <td>操作员</td>
+            </tr>
+            </thead>
+            <tbody id="zulincar"></tbody>
+        </table>
+    </div>
+    <div class="right1 hide">
+        <table class="table  table-striped navbar-default">
+            <thead>
+            <tr>
+                <td></td>
+                <td>行号</td>
+                <td>租赁名称</td>
+                <td>租赁人</td>
+                <td>实收金额</td>
+                <td>找零金额</td>
+                <td>归还日期</td>
+                <td>操作员</td>
+            </tr>
+            </thead>
+            <tbody id="zulincar1"></tbody>
+        </table>
+    </div>
+</div>
+
+
+<script src="/public/js/jquery-1.12.3.min.js"></script>
+<script src="/public/js/bootstrap.min.js"></script>
+<script type="text/javascript" src="/public/js/PageNav.js"></script>
+<script type="text/javascript" src="/public/js/underscore-min.js"></script>
+<script>
+
+       $(".zu").click(function () {
+           $("#zulincar1").empty();
+           $(".right").addClass("show");
+           $(".right1").removeClass("show");
+           $.get("/tongzu", function (data) {
+               var str = "";
+               var data = data.result;
+               $.each(data, function (i, n) {
+                   str = "<tr class='shows '>" +
+                       "<th><input type='radio' class='delbtn show' name='timu' data-sid='\" + data[i].sid + \"'/></th>" +
+                       "<th class='sid'>" + data[i].sid + "</th>" +
+                       "<th class='carname'>" + data[i].carname + "</th>" +
+                       "<th class='proname'>" + data[i].proname + "</th>" +
+                       "<th class='day'>" + data[i].day + "</th>" +
+                       "<th class='daymoney'>" + data[i].daymoney + "</th>" +
+                       "<th class='pay'>" + data[i].yingpay + "</th>" +
+                       "<th class='yingpay'>" + data[i].yingpay + "</th>" +
+                       "<th class='caozuoyuan'>" + data[i].proname + "</th>" +
+                       "</tr>";
+                   $("#zulincar").append(str);
+               })
+           })
+       })
+       $(".huan").click(function () {
+           $("#zulincar").empty();
+           $(".right1").addClass("show");
+           $(".right").removeClass("show");
+           $.get("/tonghuan", function (data) {
+               var str = "";
+               var data = data.result;
+               $.each(data, function (i, n) {
+                   str = "<tr class='shows '>" +
+                       "<th><input type='radio' class='delbtn show' name='timu' data-sid='\" + data[i].sid + \"'/></th>" +
+                       "<th class='sid'>" + data[i].sid + "</th>" +
+                       "<th class='proname'>" + data[i].proname + "</th>" +
+                       "<th class='carname'>" + data[i].carname + "</th>" +
+                       "<th class='riqi'>" + data[i].riqi + "</th>" +
+                       "<th class='paysum'>" + data[i].paysum + "</th>" +
+                       "<th class='payall'>" + data[i].payall + "</th>" +
+                       "<th class='carname'>" + data[i].carname + "</th>" +
+                       "</tr>";
+                   $("#zulincar1").append(str);
+               })
+           })
+       })
+
+
+       $("#tui").click(function () {
+           $.get("/tui", function (data) {
+               alert("成功");
+               window.location = "/";
+           })
+       })
+
+</script>
+
+
+</body>
+</html>

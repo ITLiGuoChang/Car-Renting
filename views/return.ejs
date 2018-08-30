@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <style>
+        body {
+            background: url(/public/img/bg.jpg);
+            background-size: cover;
+        }
+
+        .jumbotron ul {
+            margin-top: -20px;
+            margin-left: -80px;
+        }
+
+        .jumbotron ul li {
+            width: 70px;
+            display: inline-block;
+            list-style: none;
+        }
+    </style>
+    <link rel="stylesheet" href="/public/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/public/css/jquery-ui.css"/>
+    <link rel="stylesheet" href="/public/css/pqgrid.min.css"/>
+    <link rel="stylesheet" href="/public/themes/Office/pqgrid.css"/>
+    <script src="/public/js/jquery-1.12.3.min.js"></script>
+    <script src="/public/js/bootstrap.min.js"></script>
+    <script src="/public/js/jquery-ui.min.js"></script>
+    <script src="/public/js/pqgrid.min.js"></script>
+    <script src="/public/js/underscore-min.js"></script>
+</head>
+<body>
+<nav class="navbar navbar-default navbar-static-top">
+    <div class="container">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar"
+                    aria-expanded="false" aria-controls="navbar">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="#">汽车租凭系统</a>
+        </div>
+        <div id="navbar" class="navbar-collapse collapse">
+            <ul class="nav navbar-nav">
+                <li><a href="/admin">客人查询</a></li>
+                <li><a href="/lease">租凭登记</a></li>
+                <li class="active"><a href="/return">归还登记</a></li>
+                <li><a href="/statistics">统计分析</a></li>
+                <li><a href="/category">类别档案</a></li>
+                <li><a href="/car">汽车档案</a></li>
+                <li><a href="#">退出系统</a></li>
+            </ul>
+        </div>
+    </div>
+</nav>
+<div class="container col-md-9" style="background: rgba(225,225,225,0.5); border-radius: 10px; margin-top: 100px">
+    <div class="jumbotron">
+        <div id="grid" style="margin-top: 30px; margin-left: -38px"></div>
+    </div>
+    <div style="margin-left: 22px;margin-top: -54px;">
+        <input type="button" value="归还" class="btn btn-success" id="guihuan" style="margin-top: -28px">
+        <!--已付押金: <input class="payid" type="text">-->
+        <!--应付金额: <input class="payall" type="text">-->
+        <!--找零金额: <input class="paysum" type="text">-->
+    </div>
+</div>
+<script>
+    $()
+    $.get("/returncar/allcar", function (data) {
+        var dataobj = data.result;
+        $("#grid").pqGrid({
+            width: 1300,
+            height: 400,
+            title: "所有客户",
+            resizable: false,
+            draggable: false,
+            dataModel: {
+                data: dataobj
+            },
+            pageModel: {
+                type: "local",
+                rPP: 4,
+                strRpp: "{0}",
+                strDisplay: "{0} to {1} of {2}",
+                rPPOptions: [4, 5, 10, 15]
+            },
+            colModel: [
+                {title: "行号", width: 100, dataType: "string", dataIndx: "sid", editable: false},
+                {title: "租赁人", width: 150, dataType: "string", dataIndx: "proname"},
+                {title: "租赁名称", width: 180, dataType: "string", dataIndx: "carname"},
+                {title: "租赁时长", width: 200, dataType: "string", dataIndx: "day"},
+                {title: "每天价格", width: 200, dataType: "string", dataIndx: "daymoney"},
+                {title: "已付押金", width: 200, dataType: "string", dataIndx: "pay"},
+                {title: "应付金额", width: 200, dataType: "string", dataIndx: "yingpay"},
+                {
+                    title: "",
+                    dataIndx: "state",
+                    width: 30,
+                    minWidth: 30,
+                    align: "center",
+                    type: 'checkBoxSelection',
+                    cls: 'ui-state-default',
+                    resizable: false,
+                    sortable: false
+                }
+            ],
+            cellSave: function (event, ui) {
+                console.log(ui.rowData);
+                // ui.rowData能够拿到这一行的全部数据，甭废话，直接扔给服务器持久化！
+                // $.post("/admin/course/change", ui.rowData, function (data) {
+                //
+                // });
+            }
+        });
+    });
+
+    $("#guihuan").one('click', function () {
+        confirm("确认要归还车辆吗？");
+        $.post("/guihuan", {
+            sid: $("input[checked=checked]").parent().parent().children("td").eq(1).html(),
+            carname: $("input[checked=checked]").parent().parent().children("td").eq(2).html(),
+            proname: $("input[checked=checked]").parent().parent().children("td").eq(3).html(),
+            payall: $("input[checked=checked]").parent().parent().children("td").eq(4).html(),
+            paysum: $("input[checked=checked]").parent().parent().children("td").eq(5).html(),
+            riqi: $("input[checked=checked]").parent().parent().children("td").eq(6).html(),
+            caozuoyuan: $("input[checked=checked]").parent().parent().children("td").eq(7).html()
+        }, function (data) {
+            if (data == -1) {
+                alert("归还错误！");
+            } else {
+                alert("归还成功");
+                var sid = $("input[checked=checked]").parent().parent().children("td").eq(1).html();
+                console.log(sid)
+                $.get('/shanchu/' + sid, function (data) {
+                })
+                $.get('/xiugai/' + sid, function (data) {
+                })
+                window.location = '/return'
+            }
+        });
+    });
+    $('#grid').on('click','tr',function(){
+        console.log($(this))
+    })
+
+
+</script>
+</body>
+</html>

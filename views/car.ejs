@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <style>
+        body {
+            background: url(/public/img/bg.jpg);
+            background-size: cover;
+        }
+
+        .jumbotron ul {
+            margin-top: -20px;
+            margin-left: -80px;
+        }
+
+        .jumbotron ul li {
+            width: 70px;
+            display: inline-block;
+            list-style: none;
+        }
+    </style>
+    <link rel="stylesheet" href="/public/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/public/css/jquery-ui.css"/>
+    <link rel="stylesheet" href="/public/css/pqgrid.min.css"/>
+    <link rel="stylesheet" href="/public/themes/Office/pqgrid.css"/>
+    <script src="/public/js/jquery-1.12.3.min.js"></script>
+    <script src="/public/js/bootstrap.min.js"></script>
+    <script src="/public/js/jquery-ui.min.js"></script>
+    <script src="/public/js/pqgrid.min.js"></script>
+    <script src="/public/js/underscore-min.js"></script>
+</head>
+<body>
+<nav class="navbar navbar-default navbar-static-top">
+    <div class="container">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar"
+                    aria-expanded="false" aria-controls="navbar">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="#">汽车租赁系统</a>
+        </div>
+        <div id="navbar" class="navbar-collapse collapse">
+            <ul class="nav navbar-nav">
+                <li><a href="/admin">客人查询</a></li>
+                <li><a href="/lease">租凭登记</a></li>
+                <li><a href="/return">归还登记</a></li>
+                <li><a href="/statistics">统计分析</a></li>
+                <li><a href="/category">类别档案</a></li>
+                <li class="active"><a href="/car">汽车档案</a></li>
+                <li><a href="#">退出系统</a></li>
+            </ul>
+        </div>
+    </div>
+</nav>
+<div class="container col-md-8" style="background: rgba(225,225,225,0.5); border-radius: 10px; margin-top: 100px">
+    <div class="jumbotron">
+        <ul>
+            <li>
+                <button type="button" class="btn btn-info" data-toggle="modal" data-target="#exampleModal"
+                        data-whatever="@mdo">增加
+                </button>
+            </li>
+            <li>
+                <input type="button" class="btn btn-info" value="修改">
+            </li>
+            <li>
+                <input type="button" class="btn btn-info" value="删除" id="shanchu">
+            </li>
+            <li>
+                <input type="button" class="btn btn-info" value="返回">
+            </li>
+        </ul>
+        <div id="grid" style="margin-top: 30px; margin-left: -38px"></div>
+        <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                                    aria-hidden="true">&times;</span></button>
+                        <h4 class="modal-title" id="exampleModalLabel">客户信息</h4>
+                    </div>
+                    <div class="modal-body">
+                        <form>
+                            <div class="form-group">
+                                <label for="recipient-name" class="control-label">行号：</label>
+                                <input type="text" class="form-control" id="sid">
+                            </div>
+                            <div class="form-group">
+                                <label for="recipient-name" class="control-label">汽车名称：</label>
+                                <input type="text" class="form-control" id="name">
+                            </div>
+                            <div class="form-group">
+                                <label for="recipient-name" class="control-label">所属类型：</label>
+                                <!--<input type="text" class="form-control" id="type">-->
+                                <select class="peoname" id="type"></select>
+                            </div>
+                            <div class="form-group">
+                                <label for="recipient-name" class="control-label">租赁价格：</label>
+                                <input type="text" class="form-control" id="price">
+                            </div>
+                            <div class="form-group">
+                                <label for="recipient-name" class="control-label">计量单位：</label>
+                                <input type="text" class="form-control" id="company" value="天" disabled>
+                            </div>
+                            <div class="form-group">
+                                <label for="recipient-name" class="control-label">出租状态：</label>
+                                <input type="text" class="form-control" id="zhuangtai" value="待出租" disabled>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                        <button type="button" class="btn btn-primary" id="tijiao">提交</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    $("#edit").click(function () {
+        alert("你确定要退出系统？");
+        window.location = "/"
+    });
+    $("#tijiao").click(function () {
+        $.post("/admin/addcar", {
+            "sid": $("#sid").val(),
+            "name": $("#name").val(),
+            "type": $("#type").val(),
+            "price": $("#price").val(),
+            "company": $("#company").val(),
+            "zhuangtai": $("#zhuangtai").val(),
+        }, function (data) {
+            alert(data);
+            window.location = "/car";
+            $("#exampleModal").modal("hide");
+            table();
+        })
+    });
+    $("#shanchu").click(function () {
+        confirm("确认要删除么？");
+        var needToDelete = [];
+        $("tr.pq-row-select").each(function () {
+            needToDelete.push($(this).find("td[pq-col-indx=0]").html());
+        });
+        needToDelete = _.uniq(needToDelete);
+        $.post("/admin/deletecar", {
+            needToDelete: JSON.stringify(needToDelete)
+        }, function (data) {
+            if (data == -1) {
+                alert("删除错误！");
+            } else {
+                alert("删除成功");
+                $("tr.pq-row-select").slideUp();
+            }
+        });
+    });
+    $.get("/admin/addcategory", function (data) {
+        _.each(data.results, function (i) {
+            $("<option>" + i.category + "</option>").appendTo(".peoname")
+            $(".peoname").append("<opaction>" + i.category + "</opaction>");
+        })
+    });
+</script>
+<script>
+    table();
+    function table() {
+        $.get("/admin/allcar", {z: Math.random()}, function (data) {
+            var dataobj = data.results;
+            $("#grid").pqGrid({
+                width: 1100,
+                height: 400,
+                title: "所有客户",
+                resizable: false,
+                draggable: false,
+                dataModel: {
+                    data: dataobj
+                },
+                pageModel: {
+                    type: "local",
+                    rPP: 4,
+                    strRpp: "{0}",
+                    strDisplay: "{0} to {1} of {2}",
+                    rPPOptions: [4, 5, 10, 15]
+                },
+                colModel: [
+                    {title: "行号", width: 100, dataType: "string", dataIndx: "sid", editable: false},
+                    {title: "汽车名称", width: 150, dataType: "string", dataIndx: "name"},
+                    {title: "所属类型", width: 180, dataType: "string", dataIndx: "type"},
+                    {title: "租赁价格", width: 200, dataType: "string", dataIndx: "price"},
+                    {title: "计量单位", width: 200, dataType: "string", dataIndx: "company"},
+                    {title: "出租状态", width: 200, dataType: "string", dataIndx: "zhuangtai"},
+                    {
+                        title: "",
+                        dataIndx: "state",
+                        width: 30,
+                        minWidth: 30,
+                        align: "center",
+                        type: 'checkBoxSelection',
+                        cls: 'ui-state-default',
+                        resizable: false,
+                        sortable: false
+                    }
+                ],
+                cellSave: function (event, ui) {
+                    var hanghao = ui.rowData.sid;
+                    $.post("/updatacar/" + hanghao, ui.rowData, function (data) {
+                    })
+                }
+            });
+        });
+    }
+</script>
+</body>
+</html>

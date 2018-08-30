@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <style>
+        body {
+            background: url(/public/img/bg.jpg);
+            background-size: cover;
+        }
+
+        .jumbotron ul {
+            margin-top: -20px;
+            margin-left: -80px;
+        }
+
+        .jumbotron ul li {
+            width: 70px;
+            display: inline-block;
+            list-style: none;
+        }
+    </style>
+    <link rel="stylesheet" href="/public/css/bootstrap.min.css">
+    <script src="/public/js/jquery-1.12.3.min.js"></script>
+    <script src="/public/js/bootstrap.min.js"></script>
+    <script src="/public/js/PageNav.js"></script>
+</head>
+<body>
+<nav class="navbar navbar-default navbar-static-top">
+    <div class="container">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar"
+                    aria-expanded="false" aria-controls="navbar">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="#">汽车租凭系统</a>
+        </div>
+        <div id="navbar" class="navbar-collapse collapse">
+            <ul class="nav navbar-nav">
+                <li><a href="/admin">客人查询</a></li>
+                <li><a href="/lease">租凭登记</a></li>
+                <li><a href="/return">归还登记</a></li>
+                <li><a href="/statistics">统计分析</a></li>
+                <li class="active"><a href="/category">类别档案</a></li>
+                <li><a href="/car">汽车档案</a></li>
+                <li><a href="#">退出系统</a></li>
+            </ul>
+        </div>
+    </div>
+</nav>
+<div class="container col-md-8" style="background: rgba(225,225,225,0.5); border-radius: 10px; margin-top: 100px">
+    <div class="jumbotron">
+        <ul>
+            <li>
+                <button type="button" class="btn btn-info" data-toggle="modal" data-target="#exampleModal"
+                        data-whatever="@mdo">增加
+                </button>
+            </li>
+            <li>
+                <input type="button" class="btn btn-info" value="删除" id="shanchu">
+            </li>
+            <li>
+                <input type="button" class="btn btn-info" value="返回" id="fanhui">
+            </li>
+        </ul>
+        <table class="table table-bordered navbar-default">
+            <tbody>
+            <tr>
+                <td width="50px"></td>
+                <td width="50px">行号</td>
+                <td width="50px">类别名称</td>
+            </tr>
+            </tbody>
+            <tbody id="tbody"></tbody>
+        </table>
+        <div id="pagenavbox"></div>
+        <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                                    aria-hidden="true">&times;</span></button>
+                        <h4 class="modal-title" id="exampleModalLabel">类别档案</h4>
+                    </div>
+                    <div class="modal-body">
+                        <form>
+                            <div class="form-group">
+                                <label for="recipient-name" class="control-label">行号：</label>
+                                <input type="text" class="form-control" id="line" name="sid">
+                            </div>
+                            <div class="form-group">
+                                <label for="recipient-name" class="control-label">类别名称：</label>
+                                <input type="text" class="form-control" id="category" name="category">
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                        <button type="button" class="btn btn-primary" id="tijiao">提交</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    $("#tijiao").click(function () {
+        $.post("/admin/addcategory", {
+            sid: parseInt($("input[name=sid]").val()),
+            category: $("input[name=category]").val(),
+        }, function (data) {
+            if (data.result == 1) {
+                alert("提交成功！");
+                window.location = '/category';
+                $("input[type=text]").val("");
+            } else if (data.result == -1) {
+                alert("提交失败，学号被占用！");
+            } else if (data.result == -2) {
+                alert("服务器错误!");
+            }
+        })
+    });
+        $.get("/admin/addcategory", function (data) {
+            $.each(data.results, function (i, n) {
+                $tr = $("<tr class='shows'></tr>");
+                $("<td><input type='radio' name='xz' class='btn btn-danger' data-sid='" + n.sid + "'/></td>").appendTo($tr);
+                $("<td></td>").html(n.sid).appendTo($tr);
+                $("<td></td>").html(n.category).appendTo($tr);
+                $tr.appendTo($("#tbody"));
+            });
+        });
+
+    $('#shanchu').click(function () {
+        var sid = $('input[name=xz]').attr("data-sid");
+        console.log(sid)
+        var $this = $(this);
+        $.ajax({
+            url: "/admin/addcategory/" + sid,
+            type: "delete",
+            success: function (data) {
+                if (data.result == 1) {
+                    alert("确定要删除！")
+                    window.location = '/category'
+                    $this.parents("tr").remove();
+                } else {
+                    alert("服务器错误！");
+                }
+            }
+        });
+    });
+    $('#fanhui').click(function () {
+        window.location="/admin"
+    })
+</script>
+</body>
+</html>
